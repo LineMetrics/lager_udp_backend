@@ -17,15 +17,15 @@ Include this backend into your project using rebar:
 
 ### Configuration
 
-You can pass the backend the following configuration (shown are the defaults):
+You can pass the backend the following configuration :
 
     {lager, [
       {handlers, [
         {lager_udp_backend, [
-          {name,        "lager_amqp_backend"},
+          {name,        "lager_udp_backend"},
           {level,       debug},
-          {udp_host,   "localhost"},
-          {udp_port,   5672}
+          {host,    "localhost"},
+          {port,    5672}
         ]}
       ]}
     ]}
