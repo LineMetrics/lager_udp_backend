@@ -1,7 +1,7 @@
 lager_udp_backend
 =================
 
-lager-logging upd backend with msgpack 
+lager udp-backend with msgpack 
 
 This is a backend for the Lager Erlang logging framework.
 
