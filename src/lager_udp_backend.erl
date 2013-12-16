@@ -92,7 +92,7 @@ log(Level, DateTime, Time, Message, #state{socket = Socket} = State) ->
 %%    io:format("log: ~p~n",[Message]),
 %%    [_LevelString, [Pid|_W], M] = Message,
    StringLevel = atom_to_list(lager_util:num_to_level(Level)),
-   Msg = {[{<<"time">>, list_to_binary(DateTime)}, {<<"lev">>, list_to_binary(StringLevel)},
+   Msg = {[{<<"time">>, list_to_binary([DateTime, " " , Time])}, {<<"lev">>, list_to_binary(StringLevel)},
 %%       {<<"pid">>, list_to_binary(Pid)},
       {<<"msg">>,list_to_binary(Message)}]},
    send(State, msgpack:pack(Msg)).
