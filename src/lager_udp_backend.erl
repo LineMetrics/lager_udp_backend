@@ -61,7 +61,16 @@ handle_call(get_loglevel, #state{level = Level} = State) ->
 handle_call(_Request, State) ->
    {ok, ok, State}.
 
-handle_event({log, Dest, Level, {Date, Time}, Message}, #state{level = L} = State) when Level > L ->
+handle_event({log, Msg}, #state{level=LogLevel} = State) ->
+   {Date, Time} = lager_msg:datetime(Msg),
+   case lager_util:is_loggable(Msg, LogLevel, ?MODULE) of
+      true ->
+         {ok, log(lager_msg:severity_as_int(Msg), Date, Time, lager_msg:message(Msg), State)};
+
+      _ ->
+         {ok, State}
+   end;
+handle_event({log, {lager_msg, [], Dest, Level, {Date, Time}, Message}} = M, #state{level = L} = State) when Level > L ->
    {ok, log(Level, Date, Time, Message, State)};
 handle_event({log, Level, {Date, Time}, Message}, #state{level = L} = State) when Level =< L ->
    {ok, log(Level, Date, Time, Message, State)};
@@ -79,11 +88,13 @@ code_change(_OldVsn, State, _Extra) ->
    {ok, State}.
 
 %%%%%
-log(Level, Date, Time, Message, #state{socket = Socket} = State) ->
-   [_LevelString, [Pid|_W], M] = Message,
+log(Level, DateTime, Time, Message, #state{socket = Socket} = State) ->
+%%    io:format("log: ~p~n",[Message]),
+%%    [_LevelString, [Pid|_W], M] = Message,
    StringLevel = atom_to_list(lager_util:num_to_level(Level)),
-   Msg = {[{<<"time">>, iolist_to_binary([Date, " ", Time])}, {<<"lev">>, list_to_binary(StringLevel)},
-      {<<"pid">>, list_to_binary(Pid)}, {<<"msg">>,list_to_binary(M)}]},
+   Msg = {[{<<"time">>, list_to_binary(DateTime)}, {<<"lev">>, list_to_binary(StringLevel)},
+%%       {<<"pid">>, list_to_binary(Pid)},
+      {<<"msg">>,list_to_binary(Message)}]},
    send(State, msgpack:pack(Msg)).
 
 send(#state{socket = Socket} = State, Message) ->
