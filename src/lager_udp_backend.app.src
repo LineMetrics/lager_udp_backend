@@ -1,0 +1,11 @@
+{application, lager_udp_backend, [
+  {description, "Lager UDP Logging Backend"},
+  {vsn, "0.3"},
+  {registered, []},
+  {applications, [
+    kernel,
+    stdlib,
+    lager
+  ]},
+  {env, []}
+]}.
