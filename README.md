@@ -25,7 +25,7 @@ You can pass the backend the following configuration :
           {name,        "lager_udp_backend"},
           {level,       debug},
           {host,    "localhost"},
-          {port,    5672}
+          {port,    4712}
         ]}
       ]}
     ]}
