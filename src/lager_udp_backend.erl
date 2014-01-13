@@ -65,7 +65,7 @@ handle_event({log, Msg}, #state{level=LogLevel} = State) ->
    {Date, Time} = lager_msg:datetime(Msg),
    case lager_util:is_loggable(Msg, LogLevel, ?MODULE) of
       true ->
-         {ok, log(lager_msg:severity_as_int(Msg), Date, Time, lager_msg:message(Msg), State)};
+         {ok, log(lager_msg:severity_as_int(Msg), Date, Time, Msg, State)};
 
       _ ->
          {ok, State}
@@ -92,9 +92,10 @@ log(Level, DateTime, Time, Message, #state{socket = Socket} = State) ->
 %%    io:format("log: ~p~n",[Message]),
 %%    [_LevelString, [Pid|_W], M] = Message,
    StringLevel = atom_to_list(lager_util:num_to_level(Level)),
+   Meta = [[list_to_binary(atom_to_list(K)), make_printable(V)] || {K,V} <- lager_msg:metadata(Message)], 
    Msg = {[{<<"time">>, list_to_binary([DateTime, " " , Time])}, {<<"lev">>, list_to_binary(StringLevel)},
-%%       {<<"pid">>, list_to_binary(Pid)},
-      {<<"msg">>,list_to_binary(Message)}]},
+      {<<"meta">>, Meta},
+      {<<"msg">>,list_to_binary(lager_msg:message(Message))}]},
    send(State, msgpack:pack(Msg)).
 
 send(#state{socket = Socket} = State, Message) ->
@@ -111,6 +112,12 @@ config_val(C, Params, Default) ->
       {C, V} -> V;
       _ -> Default
    end.
+
+make_printable(A) when is_list(A) -> iolist_to_binary(A);
+make_printable(A) when is_atom(A) -> iolist_to_binary(atom_to_list(A));
+make_printable(A) when is_number(A) -> A;
+make_printable(P) when is_pid(P) -> iolist_to_binary(pid_to_list(P));
+make_printable(Other) -> iolist_to_binary(io_lib:format("~p",[Other])).
 
 
 test() ->
