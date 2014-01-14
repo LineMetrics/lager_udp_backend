@@ -93,7 +93,7 @@ log(Level, DateTime, Time, Message, #state{socket = Socket} = State) ->
 %%    [_LevelString, [Pid|_W], M] = Message,
    StringLevel = atom_to_list(lager_util:num_to_level(Level)),
 
-   Meta = [iolist_to_binary([atom_to_list(K), " ", make_printable(V)]) || {K,V} <- lager_msg:metadata(Message)],
+   Meta = [iolist_to_binary([atom_to_list(K), "=", make_printable(V)]) || {K,V} <- lager_msg:metadata(Message)],
 
    Msg = {[{<<"time">>, list_to_binary([DateTime, " " , Time])}, {<<"lev">>, list_to_binary(StringLevel)},
       {<<"meta">>, Meta},
