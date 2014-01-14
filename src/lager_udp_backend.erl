@@ -92,10 +92,12 @@ log(Level, DateTime, Time, Message, #state{socket = Socket} = State) ->
 %%    io:format("log: ~p~n",[Message]),
 %%    [_LevelString, [Pid|_W], M] = Message,
    StringLevel = atom_to_list(lager_util:num_to_level(Level)),
-   Meta = [[list_to_binary(atom_to_list(K)), make_printable(V)] || {K,V} <- lager_msg:metadata(Message)], 
+
+   Meta = [iolist_to_binary([atom_to_list(K), " ", make_printable(V)]) || {K,V} <- lager_msg:metadata(Message)],
+
    Msg = {[{<<"time">>, list_to_binary([DateTime, " " , Time])}, {<<"lev">>, list_to_binary(StringLevel)},
       {<<"meta">>, Meta},
-      {<<"msg">>,list_to_binary(lager_msg:message(Message))}]},
+      {<<"msg">>,list_to_binary(lager_msg:message(Message))}]}, 
    send(State, msgpack:pack(Msg)).
 
 send(#state{socket = Socket} = State, Message) ->
@@ -113,11 +115,10 @@ config_val(C, Params, Default) ->
       _ -> Default
    end.
 
-make_printable(A) when is_list(A) -> iolist_to_binary(A);
-make_printable(A) when is_atom(A) -> iolist_to_binary(atom_to_list(A));
-make_printable(A) when is_number(A) -> A;
-make_printable(P) when is_pid(P) -> iolist_to_binary(pid_to_list(P));
-make_printable(Other) -> iolist_to_binary(io_lib:format("~p",[Other])).
+make_printable(A) when is_list(A) -> A;
+make_printable(A) when is_atom(A) -> atom_to_list(A);
+make_printable(P) when is_pid(P) -> pid_to_list(P);
+make_printable(Other) -> io_lib:format("~p",[Other]).
 
 
 test() ->
