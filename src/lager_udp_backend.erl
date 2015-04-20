@@ -91,6 +91,7 @@ code_change(_OldVsn, State, _Extra) ->
 log(Level, DateTime, Time, Message, #state{socket = Socket} = State) ->
 %%    io:format("log: ~p~n",[Message]),
 %%    [_LevelString, [Pid|_W], M] = Message,
+%%    io:format("the time : ~p~n",[[DateTime, " " , Time]]),
    StringLevel = atom_to_list(lager_util:num_to_level(Level)),
    Msg = {[{<<"time">>, list_to_binary([DateTime, " " , Time])}, {<<"lev">>, list_to_binary(StringLevel)},
 %%       {<<"pid">>, list_to_binary(Pid)},
@@ -102,7 +103,9 @@ send(#state{socket = Socket} = State, Message) ->
       ok                ->    NewState = State;
       {error, closed}   ->   {ok, NewSocket} = gen_udp:open(State#state.port, ?SOCKET_OPTIONS),
                               gen_udp:send(NewSocket, State#state.host, State#state.port, Message),
-                              NewState = State#state{socket = NewSocket}
+                              NewState = State#state{socket = NewSocket},
+                              lager:warning("udp-socket closed, new socket started");
+      {error, What}     -> lager:error("ERROR NO UDP SOCKET ~p~n",[What])
    end,
    NewState.
 
