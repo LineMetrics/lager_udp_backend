@@ -103,14 +103,16 @@ log(Level, DateTime, Time, Message, #state{socket = Socket} = State) ->
 
 send(#state{socket = Socket} = State, Message) ->
    case gen_udp:send(Socket, State#state.host, State#state.port, Message) of
-      ok                ->    NewState = State;
-      {error, closed}   ->   {ok, NewSocket} = gen_udp:open(State#state.port, ?SOCKET_OPTIONS),
+
+      ok                ->    State;
+
+      {error, closed}   ->    {ok, NewSocket} = gen_udp:open(State#state.port, ?SOCKET_OPTIONS),
                               gen_udp:send(NewSocket, State#state.host, State#state.port, Message),
-                              NewState = State#state{socket = NewSocket},
-                              lager:warning("udp-socket closed, new socket started");
-      {error, What}     -> lager:error("ERROR NO UDP SOCKET ~p~n",[What])
-   end,
-   NewState.
+                              lager:warning("udp-socket closed, new socket started"),
+                              State#state{socket = NewSocket};
+      {error, What}     ->    lager:error("ERROR NO UDP SOCKET ~p~n",[What]),
+                              State
+   end.
 
 config_val(C, Params, Default) ->
    case lists:keyfind(C, 1, Params) of
