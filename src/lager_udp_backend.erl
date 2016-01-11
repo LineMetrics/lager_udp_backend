@@ -110,7 +110,7 @@ send(#state{socket = Socket} = State, Message) ->
                               gen_udp:send(NewSocket, State#state.host, State#state.port, Message),
                               lager:warning("udp-socket closed, new socket started"),
                               State#state{socket = NewSocket};
-      {error, What}     ->    lager:error("ERROR NO UDP SOCKET ~p~n",[What]),
+      {error, What}     ->    lager:error("ERROR sending udp-message ~p~n",[What]),
                               State
    end.
 
