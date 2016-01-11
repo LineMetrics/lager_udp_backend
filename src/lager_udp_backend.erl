@@ -99,7 +99,7 @@ log(Level, DateTime, Time, Message, #state{socket = Socket} = State) ->
    Msg = {[{<<"time">>, list_to_binary([DateTime, " " , Time])}, {<<"lev">>, list_to_binary(StringLevel)},
       {<<"meta">>, Meta},
       {<<"msg">>,list_to_binary(lager_msg:message(Message))}]}, 
-   send(State, msgpack:pack(Msg)).
+   send(State, msgpack:pack(Msg, [{format,jiffy}])).
 
 send(#state{socket = Socket} = State, Message) ->
    case gen_udp:send(Socket, State#state.host, State#state.port, Message) of
